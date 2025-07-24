@@ -16,3 +16,11 @@ spec:
     - server auth
   duration: 2160h
   renewBefore: 360h
+  subject:
+    organizationalUnits:
+      - "PostgreSQL Database"
+    organizations:
+      - "Padmini Systems"
+  privateKey:
+    algorithm: RSA
+    size: 2048

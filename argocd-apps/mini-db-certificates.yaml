@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: mini-db-certificates
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Deploy after operator
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/padminisys/cloudnative-pg-ops.git
+    targetRevision: main
+    path: mini-db/certificates
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: padmini-pg
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

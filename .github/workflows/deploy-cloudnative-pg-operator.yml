@@ -6,6 +6,8 @@ on:
     paths:
       - 'argocd-apps/**'
       - 'cloudnative-pg-operator/**'
+      - '*/postgresql-*.yaml'
+      - '*/certificates/*.yaml'
   workflow_dispatch:
 
 jobs:
@@ -30,10 +32,24 @@ jobs:
         env:
           KUBECONFIG: /tmp/kubeconfig
 
-      - name: Wait for Image Catalog Sync
-        run: sleep 30
-        
       - name: Deploy CloudNativePG Operator
         run: kubectl apply -f argocd-apps/cloudnative-pg-operator.yaml
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+
+      - name: Deploy Database Certificates
+        run: |
+          # Apply all certificate applications (sync wave 1)
+          find argocd-apps -name "*-certificates.yaml" -exec kubectl apply -f {} \;
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+
+      - name: Wait for Certificates to be Ready
+        run: sleep 60
+        
+      - name: Deploy Database Clusters
+        run: |
+          # Apply all cluster applications (sync wave 2)
+          find argocd-apps -name "*-cluster.yaml" -exec kubectl apply -f {} \;
         env:
           KUBECONFIG: /tmp/kubeconfig 

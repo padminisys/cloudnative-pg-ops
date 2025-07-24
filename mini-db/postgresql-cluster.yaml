@@ -21,7 +21,7 @@ spec:
   
   bootstrap:
     initdb:
-      database: myapp_db
+      database: k8s_db
       owner: app_user
       secret:
         name: postgresql-credentials
