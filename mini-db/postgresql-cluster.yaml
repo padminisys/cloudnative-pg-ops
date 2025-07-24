@@ -27,17 +27,15 @@ spec:
       owner: app_user
       secret:
         name: postgresql-credentials
-
   postgresql:
     parameters:
-      # Do not set 'ssl' when certificates are used, CloudNativePG manages it automatically
       ssl_min_protocol_version: TLSv1.2
       ssl_ciphers: ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS
-      ssl_prefer_server_ciphers: true         # boolean
-      log_connections: true                   # boolean
-      log_disconnections: true                # boolean
-      max_connections: 100                    # integer is preferred, but string also works
-      shared_buffers: 128MB                   # string as per PostgreSQL format
+      log_connections: "on"
+      log_disconnections: "on"
+      max_connections: "100"
+      shared_buffers: 128MB
+
 
   resources:
     requests:
