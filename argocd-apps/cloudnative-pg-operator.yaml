@@ -12,7 +12,7 @@ spec:
       helm:
         valueFiles:
           - $values-repo/cloudnative-pg-operator/values.yaml
-    - repoURL: https://github.com/your-org/cloudnative-pg-ops.git
+    - repoURL: https://github.com/padminisys/cloudnative-pg-ops.git
       targetRevision: main
       ref: values-repo
   destination:
