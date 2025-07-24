@@ -61,3 +61,8 @@ kubectl create secret generic backup-credentials \
   --from-literal=SECRET_ACCESS_KEY=your-secret-key \
   --from-literal=REGION=your-region \
   --dry-run=client -o yaml > backup-credentials-secret.yaml
+
+
+command used - 
+
+kubectl create secret generic cc --namespace=padmini-pg --from-literal=username=app_user --from-literal=password="$(openssl rand -base64 32)" --from-literal=postgres="$(openssl rand -base64 32)"
