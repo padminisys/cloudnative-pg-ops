@@ -6,7 +6,7 @@ metadata:
 spec:
   secretName: postgresql-tls-secret
   issuerRef:
-    name: your-cluster-issuer-name  # Replace with your ClusterIssuer name
+    name: letsencrypt-prod
     kind: ClusterIssuer
   dnsNames:
     - postgresql.padmini.systems
@@ -14,5 +14,5 @@ spec:
     - digital signature
     - key encipherment
     - server auth
-  duration: 2160h # 90 days
-  renewBefore: 360h # 15 days before expiry
+  duration: 2160h
+  renewBefore: 360h

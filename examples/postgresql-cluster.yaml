@@ -7,7 +7,6 @@ spec:
   postgresVersion: 15
   instances: 1
   
-  # SSL/TLS Configuration using cert-manager
   certificates:
     serverTLSSecret: postgresql-tls-secret
     serverCASecret: postgresql-tls-secret
@@ -26,7 +25,6 @@ spec:
   
   postgresql:
     parameters:
-      # SSL Configuration - these paths are automatically managed by the operator
       ssl: "on"
       ssl_cert_file: "/controller/certificates/server-cert.pem"
       ssl_key_file: "/controller/certificates/server-key.pem" 
