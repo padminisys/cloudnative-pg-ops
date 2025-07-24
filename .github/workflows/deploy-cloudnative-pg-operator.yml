@@ -1,8 +1,11 @@
-name: Deploy CloudNativePG Operator
+name: Deploy CloudNativePG Stack
 
 on:
   push:
     branches: [main]
+    paths:
+      - 'argocd-apps/**'
+      - 'cloudnative-pg-operator/**'
   workflow_dispatch:
 
 jobs:
@@ -22,7 +25,15 @@ jobs:
         env:
           KUBECONFIG: /tmp/kubeconfig
 
-      - name: Apply ArgoCD Application
+      - name: Deploy PostgreSQL Image Catalog
+        run: kubectl apply -f argocd-apps/postgresql-image-catalog.yaml
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+
+      - name: Wait for Image Catalog Sync
+        run: sleep 30
+        
+      - name: Deploy CloudNativePG Operator
         run: kubectl apply -f argocd-apps/cloudnative-pg-operator.yaml
         env:
           KUBECONFIG: /tmp/kubeconfig 

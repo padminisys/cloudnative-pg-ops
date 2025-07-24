@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql-image-catalog
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"  # Deploy before operator
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/padminisys/cloudnative-pg-ops.git
+    targetRevision: main
+    path: argocd-apps/postgresql-image-catalog
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: padmini-pg
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true

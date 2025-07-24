@@ -4,7 +4,9 @@ metadata:
   name: standalone-postgresql
   namespace: padmini-pg
 spec:
-  postgresVersion: 15
+  imageCatalogRef:
+    name: postgresql
+    major: 17
   instances: 1
   
   certificates:
@@ -15,6 +17,7 @@ spec:
   
   storage:
     size: 10Gi
+    storageClass: ceph-filesystem
   
   bootstrap:
     initdb:
@@ -25,11 +28,8 @@ spec:
   
   postgresql:
     parameters:
+      # SSL is automatically configured by CloudNativePG when certificates section is used
       ssl: "on"
-      ssl_cert_file: "/controller/certificates/server-cert.pem"
-      ssl_key_file: "/controller/certificates/server-key.pem" 
-      ssl_ca_file: "/controller/certificates/ca-cert.pem"
-      ssl_crl_file: ""
       ssl_min_protocol_version: "TLSv1.2"
       ssl_ciphers: "ECDHE+AESGCM:ECDHE+CHACHA20:DHE+AESGCM:DHE+CHACHA20:!aNULL:!MD5:!DSS"
       ssl_prefer_server_ciphers: "on"
@@ -37,10 +37,7 @@ spec:
       log_disconnections: "on"
       max_connections: "100"
       shared_buffers: "128MB"
-  
-  monitoring:
-    enabled: true
-  
+    
   resources:
     requests:
       cpu: 100m

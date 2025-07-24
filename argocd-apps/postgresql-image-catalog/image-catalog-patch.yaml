@@ -1,0 +1,11 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ClusterImageCatalog
+metadata:
+  name: postgresql
+  labels:
+    app.kubernetes.io/name: postgresql-image-catalog
+    app.kubernetes.io/instance: padmini-pg
+    app.kubernetes.io/managed-by: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"  # Deploy before operator
+spec: {}  # Keep the original spec from remote resource
