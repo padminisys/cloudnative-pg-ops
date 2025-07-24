@@ -1,0 +1,28 @@
+name: Deploy CloudNativePG Operator
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Configure kubectl
+        run: |
+          echo "${{ secrets.PSYS_CENTOS_1_KUBE_CONFIG }}" | base64 -d > /tmp/kubeconfig
+          chmod 600 /tmp/kubeconfig
+        env:
+          KUBECONFIG: /tmp/kubeconfig
+
+      - name: Apply ArgoCD Application
+        run: kubectl apply -f argocd-apps/cloudnative-pg-operator.yaml
+        env:
+          KUBECONFIG: /tmp/kubeconfig 

@@ -1,0 +1,63 @@
+# 1. Create namespace
+kubectl create namespace padmini-pg
+
+# 2. Create the PostgreSQL credentials secret
+kubectl apply -f examples/postgresql-secret.yaml
+
+# 3. Create the certificate (cert-manager will generate the TLS secret)
+kubectl apply -f examples/postgresql-certificate.yaml
+
+# 4. Wait for certificate to be ready
+kubectl wait --for=condition=Ready certificate/postgresql-tls-cert -n padmini-pg --timeout=300s
+
+# 5. Deploy PostgreSQL cluster
+kubectl apply -f examples/postgresql-standalone-with-tls.yaml
+
+# 6. Create NodePort service for external access
+kubectl apply -f examples/postgresql-nodeport-service.yaml
+
+
+verification commands - 
+
+# Check certificate status
+kubectl get certificate -n padmini-pg
+kubectl describe certificate postgresql-tls-cert -n padmini-pg
+
+# Check if TLS secret is created
+kubectl get secret postgresql-tls-secret -n padmini-pg
+
+# Check PostgreSQL cluster status
+kubectl get clusters -n padmini-pg
+kubectl describe cluster standalone-postgresql -n padmini-pg
+
+# Check pods and services
+kubectl get pods,svc -n padmini-pg
+
+# Test SSL connection (replace NODE_IP with your actual node IP)
+psql "sslmode=require host=postgresql.padmini.systems port=30432 user=app_user dbname=myapp_db"
+
+client connections - 
+
+# Standard psql connection with SSL
+psql "postgresql://app_user:your-app-password@postgresql.padmini.systems:30432/myapp_db?sslmode=require"
+
+# Or with connection string
+psql "host=postgresql.padmini.systems port=30432 user=app_user dbname=myapp_db sslmode=require"
+
+--- manual secrets ---
+
+# Create the PostgreSQL credentials secret
+kubectl create secret generic postgresql-credentials \
+  --namespace=padmini-pg \
+  --from-literal=username=app_user \
+  --from-literal=password="$(openssl rand -base64 32)" \
+  --from-literal=postgres="$(openssl rand -base64 32)" \
+  --dry-run=client -o yaml > postgresql-credentials-secret.yaml
+
+# Create backup credentials (if using S3 backup)
+kubectl create secret generic backup-credentials \
+  --namespace=padmini-pg \
+  --from-literal=ACCESS_KEY_ID=your-access-key \
+  --from-literal=SECRET_ACCESS_KEY=your-secret-key \
+  --from-literal=REGION=your-region \
+  --dry-run=client -o yaml > backup-credentials-secret.yaml

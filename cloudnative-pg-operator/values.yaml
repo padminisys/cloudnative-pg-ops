@@ -1,0 +1,145 @@
+# CloudNativePG Operator Configuration
+config:
+  data:
+    logLevel: "info"
+
+namespaceOverride: "padmini-pg"
+image:
+  repository: "ghcr.io/cloudnative-pg/cloudnative-pg"
+  tag: ""  # Will use chart appVersion
+  pullPolicy: "IfNotPresent"
+
+# Resources configuration
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Security context
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - "ALL"
+  readOnlyRootFilesystem: true
+  runAsGroup: 10001
+  runAsUser: 10001
+  seccompProfile:
+    type: "RuntimeDefault"
+
+podSecurityContext:
+  runAsNonRoot: true
+  seccompProfile:
+    type: "RuntimeDefault"
+
+# Webhook configuration
+webhook:
+  mutating:
+    create: true
+    failurePolicy: "Fail"
+  validating:
+    create: true
+    failurePolicy: "Fail"
+  port: 9443
+  livenessProbe:
+    initialDelaySeconds: 3
+  readinessProbe:
+    initialDelaySeconds: 3
+  startupProbe:
+    failureThreshold: 6
+    periodSeconds: 5
+
+# Service configuration
+service:
+  type: "ClusterIP"
+  port: 443
+  name: "cnpg-webhook-service"  # DO NOT CHANGE - used for certificate generation
+
+# CRDs configuration
+crds:
+  create: true
+
+# Monitoring configuration (disabled for now, will be enabled when Prometheus/Grafana are available)
+monitoring:
+  podMonitorEnabled: false
+  grafanaDashboard:
+    create: false
+
+# Monitoring queries configuration
+monitoringQueriesConfigMap:
+  name: "cnpg-default-monitoring"
+  queries: |
+    backends:
+      query: |
+        SELECT sa.datname
+        , sa.usename
+        , sa.application_name
+        , states.state
+        , COALESCE(sa.count, 0) AS total
+        , COALESCE(sa.max_tx_secs, 0) AS max_tx_duration_seconds
+        FROM ( VALUES ('active')
+        , ('idle')
+        , ('idle in transaction')
+        , ('idle in transaction (aborted)')
+        , ('fastpath function call')
+        , ('disabled')
+        ) AS states(state)
+        LEFT JOIN (
+        SELECT datname
+        , state
+        , usename
+        , COALESCE(application_name, '') AS application_name
+        , COUNT(*)
+        , COALESCE(EXTRACT (EPOCH FROM (max(now() - xact_start))), 0) AS max_tx_secs
+        FROM pg_catalog.pg_stat_activity
+        GROUP BY datname, state, usename, application_name
+        ) sa ON states.state = sa.state
+        WHERE sa.usename IS NOT NULL
+      metrics:
+        - datname:
+            usage: "LABEL"
+            description: "Name of the database"
+        - usename:
+            usage: "LABEL"
+            description: "Name of the user"
+        - application_name:
+            usage: "LABEL"
+            description: "Name of the application"
+        - state:
+            usage: "LABEL"
+            description: "State of the backend"
+        - total:
+            usage: "GAUGE"
+            description: "Number of backends"
+        - max_tx_duration_seconds:
+            usage: "GAUGE"
+            description: "Maximum duration of a transaction in seconds"
+
+# Additional configuration
+replicaCount: 1
+fullnameOverride: ""
+nameOverride: ""
+
+# Pod configuration
+podAnnotations: {}
+podLabels: {}
+
+# Node selector and affinity
+nodeSelector: {}
+affinity: {}
+
+# Tolerations
+tolerations: []
+
+# Topology spread constraints
+topologySpreadConstraints: []
+
+# Update strategy
+updateStrategy:
+  type: "RollingUpdate"
+  rollingUpdate:
+    maxSurge: "25%"
+    maxUnavailable: "25%" 

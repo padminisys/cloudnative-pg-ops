@@ -1,0 +1,18 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: postgresql-tls-cert
+  namespace: padmini-pg
+spec:
+  secretName: postgresql-tls-secret
+  issuerRef:
+    name: your-cluster-issuer-name  # Replace with your ClusterIssuer name
+    kind: ClusterIssuer
+  dnsNames:
+    - postgresql.padmini.systems
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  duration: 2160h # 90 days
+  renewBefore: 360h # 15 days before expiry
